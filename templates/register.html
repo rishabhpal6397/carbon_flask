@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Create Account — CarbonIQ{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <span class="brand-logo">⬡</span>
+      <h1>Carbon<strong>IQ</strong></h1>
+    </div>
+    <p class="auth-tagline">Start tracking your<br/>carbon footprint today.</p>
+    <div class="auth-stats">
+      <div class="stat"><span class="stat-val">Free</span><span class="stat-label">always free to use</span></div>
+      <div class="stat"><span class="stat-val">ML</span><span class="stat-label">powered predictions</span></div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-card">
+      <h2>Create account</h2>
+      <p class="auth-sub">Join and start measuring your impact</p>
+
+      <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="yourname" required autofocus/>
+        </div>
+        <div class="field">
+          <label>Email address</label>
+          <input type="email" name="email" placeholder="you@example.com" required/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Min. 6 characters" required/>
+        </div>
+        <div class="field">
+          <label>Confirm Password</label>
+          <input type="password" name="confirm_password" placeholder="••••••••" required/>
+        </div>
+        <button type="submit" class="btn-primary">Create Account</button>
+      </form>
+
+      <p class="auth-switch">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

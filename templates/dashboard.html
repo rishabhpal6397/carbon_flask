@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CarbonIQ{% endblock %}
+
+{% block content %}
+<div class="dash-layout">
+
+  <!-- ══════════════════════════════════════════════════════
+       LEFT : Input Panel
+  ══════════════════════════════════════════════════════════ -->
+  <aside class="input-panel">
+    <div class="panel-header">
+      <span class="panel-tag">Your Lifestyle</span>
+      <h2>Carbon Inputs</h2>
+    </div>
+
+    <!-- Travel -->
+    <div class="input-section">
+      <div class="input-section-title">🚗 Travel</div>
+      <div class="field">
+        <label>Daily Travel <span class="unit">km/day</span></label>
+        <div class="slider-row">
+          <input type="range" id="travel_km" min="0" max="100" value="10"/>
+          <output id="travel_km_out">10</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>Vehicle Type</label>
+        <select id="vehicle">
+          <option>Petrol</option>
+          <option>Diesel</option>
+          <option>Electric</option>
+          <option>Public Transport</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Energy -->
+    <div class="input-section">
+      <div class="input-section-title">⚡ Energy</div>
+      <div class="field">
+        <label>Electricity <span class="unit">kWh/month</span></label>
+        <div class="slider-row">
+          <input type="range" id="electricity" min="50" max="1000" value="200"/>
+          <output id="electricity_out">200</output>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lifestyle -->
+    <div class="input-section">
+      <div class="input-section-title">🥗 Lifestyle</div>
+      <div class="field">
+        <label>Diet Type</label>
+        <select id="diet">
+          <option>Vegetarian</option>
+          <option selected>Mixed</option>
+          <option>Non-Vegetarian</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>New Clothes <span class="unit">per month</span></label>
+        <div class="slider-row">
+          <input type="range" id="clothes_monthly" min="0" max="50" value="5"/>
+          <output id="clothes_monthly_out">5</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>Waste Bags <span class="unit">per week</span></label>
+        <div class="slider-row">
+          <input type="range" id="waste_weekly" min="0" max="20" value="3"/>
+          <output id="waste_weekly_out">3</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>Grocery Bill <span class="unit">₹/month</span></label>
+        <div class="slider-row">
+          <input type="range" id="grocery_bill" min="0" max="5000" value="3000"/>
+          <output id="grocery_bill_out">3000</output>
+        </div>
+      </div>
+      <div class="field">
+        <label>Sex</label>
+        <div class="toggle-row">
+          <button class="toggle active" data-val="Male">Male</button>
+          <button class="toggle" data-val="Female">Female</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-calculate" id="calculateBtn">Calculate Footprint</button>
+  </aside>
+
+  <!-- ══════════════════════════════════════════════════════
+       RIGHT : Results + History
+  ══════════════════════════════════════════════════════════ -->
+  <main class="results-area">
+
+    <!-- Placeholder shown before first calculation -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">⬡</div>
+      <h3>Ready to calculate</h3>
+      <p>Set your lifestyle inputs and click<br/><strong>Calculate Footprint</strong></p>
+    </div>
+
+    <!-- Results (hidden until API responds) -->
+    <div class="results hidden" id="resultsBlock">
+
+      <!-- 01 — Carbon Score -->
+      <div class="results-header">
+        <span class="results-tag">01 — Score</span>
+        <h3>Your Carbon Score</h3>
+      </div>
+      <div class="score-card">
+        <div class="score-circle">
+          <svg viewBox="0 0 120 120" class="score-svg">
+            <circle class="score-track" cx="60" cy="60" r="50"/>
+            <circle class="score-fill"  cx="60" cy="60" r="50" id="scoreArc"/>
+          </svg>
+          <div class="score-inner">
+            <span class="score-val" id="scoreVal">—</span>
+            <span class="score-max">/100</span>
+          </div>
+        </div>
+        <div class="score-info">
+          <div class="score-badge" id="scoreBadge">—</div>
+          <div class="score-msg"   id="scoreMsg">—</div>
+        </div>
+      </div>
+
+      <!-- 02 — Emissions -->
+      <div class="results-header">
+        <span class="results-tag">02 — Emissions</span>
+        <h3>Monthly CO₂ Breakdown</h3>
+      </div>
+      <div class="cards-grid">
+        <div class="card card-total">
+          <div class="card-label">Total CO₂</div>
+          <div class="card-val" id="rTotal">—</div>
+          <div class="card-unit">kg / month</div>
+        </div>
+        <div class="card">
+          <div class="card-label">🚗 Travel</div>
+          <div class="card-val" id="rTravel">—</div>
+          <div class="card-unit">kg</div>
+        </div>
+        <div class="card">
+          <div class="card-label">⚡ Electricity</div>
+          <div class="card-val" id="rElec">—</div>
+          <div class="card-unit">kg</div>
+        </div>
+        <div class="card">
+          <div class="card-label">🥗 Diet</div>
+          <div class="card-val" id="rDiet">—</div>
+          <div class="card-unit">kg</div>
+        </div>
+      </div>
+
+      <!-- Donut Chart -->
+      <div class="chart-row">
+        <div class="donut-wrap">
+          <canvas id="donutCanvas" width="200" height="200"></canvas>
+          <div class="donut-label-center">
+            <div id="donutVal">—</div>
+            <div class="donut-sub">kg CO₂</div>
+          </div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+
+      <!-- 03 — Optimisation -->
+      <div class="results-header">
+        <span class="results-tag">03 — Optimisation</span>
+        <h3>What-If Savings</h3>
+      </div>
+      <div class="cards-grid">
+        <div class="card card-green">
+          <div class="card-label">Optimised Total</div>
+          <div class="card-val" id="rOptTotal">—</div>
+          <div class="card-unit">kg</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-label">CO₂ Saved</div>
+          <div class="card-val" id="rReduction">—</div>
+          <div class="card-unit">kg saved</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-label">Reduction</div>
+          <div class="card-val" id="rReductionPct">—</div>
+          <div class="card-unit">%</div>
+        </div>
+      </div>
+      <div class="bar-compare">
+        <div class="bar-item">
+          <span class="bar-label">Current</span>
+          <div class="bar-track"><div class="bar-fill bar-current" id="barCurrent"></div></div>
+          <span class="bar-val" id="barCurrentVal">—</span>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">Optimised</span>
+          <div class="bar-track"><div class="bar-fill bar-opt" id="barOpt"></div></div>
+          <span class="bar-val" id="barOptVal">—</span>
+        </div>
+      </div>
+
+      <!-- 04 — Prediction -->
+      <div class="results-header">
+        <span class="results-tag">04 — Prediction</span>
+        <h3>Next Month Forecast <span class="ml-badge">ML</span></h3>
+      </div>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-label">This Month</div>
+          <div class="card-val" id="rCurrent">—</div>
+          <div class="card-unit">kg</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Next Month</div>
+          <div class="card-val" id="rPredicted">—</div>
+          <div class="card-unit">kg</div>
+        </div>
+        <div class="card" id="trendCard">
+          <div class="card-label">Trend</div>
+          <div class="card-val" id="rDelta">—</div>
+          <div class="card-unit" id="rTrend">—</div>
+        </div>
+      </div>
+
+      <!-- 05 — Recommendations -->
+      <div class="results-header">
+        <span class="results-tag">05 — Actions</span>
+        <h3>Smart Recommendations</h3>
+      </div>
+      <div class="recs-list" id="recsList"></div>
+
+      <!-- PDF download link (populated by JS after save) -->
+      <div class="pdf-row hidden" id="pdfRow">
+        <a class="btn-pdf" id="pdfLink" href="#" target="_blank">📄 Download PDF Report</a>
+      </div>
+
+    </div><!-- /results -->
+
+    <!-- Monthly Trend Chart (server-rendered data, drawn by JS) -->
+    {% if monthly_chart %}
+    <div class="history-block">
+      <div class="history-header">
+        <h3>📈 Monthly Emission Trend</h3>
+      </div>
+      <div class="trend-chart-wrap">
+        <canvas id="trendCanvas" height="100"></canvas>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Past Calculations -->
+    {% if history %}
+    <div class="history-block">
+      <div class="history-header">
+        <h3>📋 Past Calculations</h3>
+        <span class="history-count">{{ history | length }} records</span>
+      </div>
+      <div class="history-list">
+
+        {# Jinja2 for-loop — renders one card per saved record #}
+        {% for h in history %}
+        <div class="history-card" id="hcard-{{ h['_id'] }}">
+
+          <div class="history-meta">
+            <span class="history-date">{{ h['created_at'] }}</span>
+            <span class="history-total">{{ h['results']['emissions']['Total'] }} kg CO₂</span>
+
+            {# Conditionally show score badge only when score data exists #}
+            {% if h['results'].get('score') %}
+              {% set sc = h['results']['score'] %}
+              <span class="history-badge"
+                    style="background:{{ sc['color'] }}22; color:{{ sc['color'] }}; border:1px solid {{ sc['color'] }}44;">
+                {{ sc['label'] }} &middot; {{ sc['value'] }}/100
+              </span>
+            {% endif %}
+          </div>
+
+          <div class="history-details">
+            <span>🚗 {{ h['inputs']['travel_km'] }} km/day ({{ h['inputs']['vehicle'] }})</span>
+            <span>⚡ {{ h['inputs']['electricity'] }} kWh</span>
+            <span>🥗 {{ h['inputs']['diet'] }}</span>
+            <span class="history-opt">
+              ✓ Saves {{ h['results']['optimization']['reduction_kg'] }} kg if optimised
+            </span>
+          </div>
+
+          <div class="history-actions">
+            {# Link directly to the per-record PDF download route #}
+            <a class="btn-report"
+               href="{{ url_for('main.download_report', calc_id=h['_id']) }}"
+               target="_blank">📄 PDF</a>
+            <button class="btn-delete" onclick="deleteRecord('{{ h['_id'] }}')">✕</button>
+          </div>
+
+        </div>
+        {% endfor %}
+
+      </div>
+    </div>
+    {% endif %}
+
+  </main>
+</div>
+
+<!-- Full-screen loader -->
+<div class="loader-overlay hidden" id="loader">
+  <div class="loader-ring"></div>
+  <p>Calculating your footprint…</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /* Monthly chart data injected by Jinja2 — consumed by app.js */
+  const MONTHLY_CHART_DATA = {{ monthly_chart | tojson }};
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Sign In — CarbonIQ{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <span class="brand-logo">⬡</span>
+      <h1>Carbon<strong>IQ</strong></h1>
+    </div>
+    <p class="auth-tagline">Measure your impact.<br/>Optimise your life.</p>
+    <div class="auth-stats">
+      <div class="stat"><span class="stat-val">3.2T</span><span class="stat-label">kg CO₂ saved globally</span></div>
+      <div class="stat"><span class="stat-val">12K+</span><span class="stat-label">users tracking footprint</span></div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-card">
+      <h2>Welcome back</h2>
+      <p class="auth-sub">Sign in to your account</p>
+
+      <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form">
+        <div class="field">
+          <label>Email address</label>
+          <input type="email" name="email" placeholder="you@example.com" required autofocus/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••" required/>
+        </div>
+        <button type="submit" class="btn-primary">Sign In</button>
+      </form>
+
+      <p class="auth-switch">Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
