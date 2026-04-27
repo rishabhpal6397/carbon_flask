@@ -11,7 +11,7 @@ load_dotenv()
 
 class Config:
     # ── Security ──────────────────────────────────────────────────────────────
-    SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-in-production")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
 
     # ── Database ──────────────────────────────────────────────────────────────
     MONGO_URI = os.environ.get("MONGO_URI")
